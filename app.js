@@ -14,7 +14,7 @@
     previewUrl = URL.createObjectURL(file);
     $('preview').src = previewUrl;
     $('previewBox').hidden = false;
-    $('price').focus();
+    runOcr(file);
   });
   $('clearPhoto').addEventListener('click', function () {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -22,7 +22,106 @@
     $('preview').removeAttribute('src');
     $('previewBox').hidden = true;
     $('cameraInput').value = '';
+    resetOcr();
   });
+
+  // ── Розпізнавання цифр з фото ─────────────────────────────────
+  var ocrRun = 0;
+  var ocrTag = null;       // «ціна за 1 кг/л» з цінника
+  var touched = {};        // поля, які користувач змінив сам під час розпізнавання
+  ['price', 'amount', 'unit'].forEach(function (id) {
+    $(id).addEventListener('input', function () { touched[id] = true; });
+  });
+
+  function resetOcr() {
+    ocrRun++;
+    ocrTag = null;
+    $('ocrBox').hidden = true;
+    $('ocrFound').hidden = true;
+  }
+
+  function setStatus(text, pct) {
+    $('ocrBox').hidden = false;
+    $('ocrStatus').textContent = text;
+    $('ocrProgressWrap').hidden = pct == null;
+    if (pct != null) $('ocrProgress').style.width = Math.round(pct * 100) + '%';
+  }
+
+  function runOcr(file) {
+    if (!window.HonestOcr) return;
+    var run = ++ocrRun;
+    touched = {};
+    ocrTag = null;
+    $('ocrFound').hidden = true;
+    setStatus('🔍 Розпізнаю цифри…', 0);
+    window.HonestOcr.recognize(file, function (m) {
+      if (run !== ocrRun) return;
+      if (m.status === 'recognizing text') setStatus('🔍 Розпізнаю цифри… ' + Math.round(m.progress * 100) + '%', m.progress);
+      else if (/load|initializ/.test(m.status)) setStatus('⏳ Готую розпізнавання (лише перший раз, ~6 МБ)…', m.progress || 0);
+    }).then(function (out) {
+      if (run !== ocrRun) return;
+      showOcr(out.result);
+    }).catch(function () {
+      if (run !== ocrRun) return;
+      setStatus('⚠️ Не вдалося розпізнати фото. Введіть цифри вручну.', null);
+    });
+  }
+
+  function chips(target, title, items, onPick) {
+    target.textContent = '';
+    if (!items.length) return;
+    var b = document.createElement('b'); b.textContent = title + ' ';
+    target.appendChild(b);
+    items.forEach(function (it, i) {
+      var c = document.createElement('button');
+      c.type = 'button'; c.className = 'chip' + (i === 0 ? ' on' : ''); c.textContent = it.label;
+      c.addEventListener('click', function () {
+        Array.prototype.forEach.call(target.querySelectorAll('.chip'), function (x) { x.classList.remove('on'); });
+        c.classList.add('on');
+        onPick(it);
+      });
+      target.appendChild(c);
+    });
+  }
+
+  function fill(id, value) { $(id).value = String(value).replace('.', ','); }
+
+  function showOcr(r) {
+    var any = r.prices.length || r.amounts.length || r.tagUnitPrice;
+    if (!any) {
+      setStatus('🤷 Цифри не знайдено. Сфотографуйте цінник ближче, рівно й без відблисків — або введіть вручну.', null);
+      return;
+    }
+    setStatus('✅ Знайдено на фото:', null);
+    $('ocrFound').hidden = false;
+    var pickPrice = function (p) { fill('price', p.value.toFixed(2)); };
+    var pickAmount = function (a) { fill('amount', a.value); $('unit').value = a.unit; };
+    chips($('ocrPrices'), 'Ціна:', r.prices, pickPrice);
+    chips($('ocrAmounts'), 'Вага/об\'єм:', r.amounts, pickAmount);
+    var askCents = r.centsMissing && !touched.price;
+    if (r.prices[0] && !touched.price) {
+      if (askCents) $('price').value = Math.floor(r.prices[0].value) + ',';
+      else pickPrice(r.prices[0]);
+    }
+    if (r.amounts[0] && !touched.amount && !touched.unit) pickAmount(r.amounts[0]);
+    ocrTag = r.tagUnitPrice;
+    $('ocrTag').textContent = ocrTag
+      ? 'На ціннику «за ' + (ocrTag.base === 'kg' ? '1 кг' : '1 л') + '»: ' + C.money(ocrTag.value) + ' грн — перевіримо.'
+      : '';
+    // Рахуємо одразу лише коли цифри підтверджують одна одну (ціна ÷ вага ≈ «ціна за 1 кг» з цінника);
+    // інакше користувач перевіряє поля й сам тисне «Розрахувати» — без хибних тривог.
+    var p0 = r.prices[0], a0 = r.amounts[0];
+    var consistent = p0 && a0 && ocrTag && (function () {
+      var u = C.unitPrice(p0.value, a0.value, a0.unit);
+      return u && u.base === ocrTag.base && Math.abs(u.perBase / ocrTag.value - 1) < 0.02;
+    })();
+    if (askCents) {
+      setStatus('✏️ Копійки не розпізнано — допишіть їх у поле ціни й натисніть «Розрахувати».', null);
+      var f = $('price'); f.focus();
+      try { f.setSelectionRange(f.value.length, f.value.length); } catch (_) {}
+    } else if (consistent && $('calcForm').requestSubmit) $('calcForm').requestSubmit();
+    else setStatus('✅ Знайдено на фото — перевірте цифри й натисніть «Розрахувати»:', null);
+  }
 
   // ── Розрахунок ────────────────────────────────────────────────
   $('calcForm').addEventListener('submit', function (e) {
@@ -33,7 +132,8 @@
       amount: $('amount').value,
       unit: $('unit').value,
       oldAmount: $('oldAmount').value,
-      oldPrice: $('oldPrice').value
+      oldPrice: $('oldPrice').value,
+      tagUnitPrice: ocrTag
     };
     var res = C.analyze(input);
     if (!res.ok) { showError(res.error); return; }
@@ -42,7 +142,7 @@
     last = { input: input, res: res, text: text };
     var out = $('reportOutput');
     out.textContent = text;
-    out.classList.toggle('warn', !!res.shrink || !!(res.old && res.old.unitPriceChangePct > 0.5));
+    out.classList.toggle('warn', !!res.shrink || !!(res.old && res.old.unitPriceChangePct > 0.5) || !!(res.tag && res.tag.mismatch));
     $('result').hidden = false;
     $('saveBtn').disabled = false;
     $('saveBtn').textContent = '➕ До порівняння';
@@ -95,6 +195,7 @@
     $('saveBtn').disabled = true;
     $('saveBtn').textContent = '✅ Додано';
     ['name', 'price', 'amount', 'oldAmount', 'oldPrice'].forEach(function (id) { $(id).value = ''; });
+    $('clearPhoto').click(); // наступний товар — з чистого аркуша
   });
 
   $('clearList').addEventListener('click', function () {

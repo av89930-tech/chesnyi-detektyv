@@ -1,0 +1,2 @@
+tesseract.js 7.0.0, tesseract.js-core 7.0.0 (LSTM builds), @tesseract.js-data/ukr 4.0.0_best_int — Apache-2.0.
+Оновлення: скопіювати ті самі файли з npm-пакетів.

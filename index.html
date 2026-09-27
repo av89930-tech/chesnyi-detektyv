@@ -19,7 +19,7 @@
   <main class="wrap">
     <header>
       <h1>🕵️ Чесний Детектив</h1>
-      <p class="sub">Реальна ціна за 1 кг / 1 л за один погляд на етикетку</p>
+      <p class="sub">Сфотографуйте цінник — цифри підставляться самі</p>
     </header>
 
     <!-- label напряму відкриває камеру: без JS-кліку, тому немає подвійного відкриття -->
@@ -30,6 +30,17 @@
       <img id="preview" alt="Фото етикетки">
       <button type="button" class="link" id="clearPhoto">Прибрати фото</button>
     </figure>
+
+    <section class="card ocr" id="ocrBox" hidden aria-live="polite">
+      <p class="ocr-status" id="ocrStatus"></p>
+      <div class="ocr-progress" id="ocrProgressWrap" hidden><div id="ocrProgress"></div></div>
+      <div id="ocrFound" hidden>
+        <p class="ocr-row" id="ocrPrices"></p>
+        <p class="ocr-row" id="ocrAmounts"></p>
+        <p class="ocr-row" id="ocrTag"></p>
+        <p class="hint">Перевірте цифри: розпізнавання може помилятися. Натисніть інший варіант, щоб підставити його.</p>
+      </div>
+    </section>
 
     <form class="card" id="calcForm" novalidate>
       <label for="name">Назва товару <span class="opt">(необов'язково)</span></label>
@@ -87,12 +98,14 @@
     </section>
 
     <footer>
-      <p>Працює офлайн. Дані зберігаються лише на цьому пристрої.</p>
+      <p>Працює офлайн. Фото розпізнаються прямо на телефоні й нікуди не надсилаються.</p>
       <p class="hint">Підказка про шрінкфляцію — це сигнал перевірити, а не доказ: деякі товари завжди продаються в нестандартній фасовці.</p>
     </footer>
   </main>
 
   <script src="calc.js"></script>
+  <script src="ocr-parse.js"></script>
+  <script src="ocr.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

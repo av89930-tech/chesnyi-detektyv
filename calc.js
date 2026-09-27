@@ -88,6 +88,12 @@
         res.old.oldSmallAmount = old.smallAmount;
       }
     }
+    // «Ціна за 1 кг/л» з цінника (розпізнана з фото) — чи чесно порахував магазин?
+    var tag = input.tagUnitPrice;
+    if (tag && num(tag.value) > 0 && tag.base === cur.base) {
+      var diffPct = (num(tag.value) / cur.perBase - 1) * 100;
+      res.tag = { value: num(tag.value), realVsTagPct: round2((cur.perBase / num(tag.value) - 1) * 100), mismatch: Math.abs(diffPct) > 1 };
+    }
     return res;
   }
 
@@ -109,6 +115,15 @@
       lines.push('Порівнюйте товари за ціною за ' + c.baseLabel + ', а не за ціною на полиці.');
     } else if (c.base !== 'pcs') {
       lines.push('✅ Фасовка не схожа на «урізану» стандартну.');
+    }
+    if (res.tag) {
+      lines.push('');
+      if (res.tag.mismatch) {
+        lines.push('🚨 ЦІННИК НЕ ЗБІГАЄТЬСЯ:');
+        lines.push('На ціннику за ' + c.baseLabel + ': ' + money(res.tag.value) + ' грн, а насправді: ' + money(c.perBase) + ' грн (' + signed(res.tag.realVsTagPct) + '%).');
+      } else {
+        lines.push('✅ Ціна за ' + c.baseLabel + ' на ціннику збігається з розрахунком.');
+      }
     }
     if (res.old) {
       var o = res.old;

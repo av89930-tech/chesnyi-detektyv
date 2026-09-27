@@ -55,3 +55,12 @@ summary { color: var(--accent); cursor: pointer; font-size: 15px; }
 #compareList .del { float: right; }
 .install p { margin: 0; font-size: 15px; }
 [hidden] { display: none !important; }
+.ocr-status { margin: 0; font-size: 15px; }
+.ocr-progress { height: 6px; background: var(--field); border-radius: 3px; margin-top: 10px; overflow: hidden; }
+.ocr-progress > div { height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+.ocr-row { margin: 10px 0 0; font-size: 14px; color: #cbd5e1; }
+.chip {
+  display: inline-block; margin: 6px 6px 0 0; padding: 8px 12px; border-radius: 999px; border: 1px solid var(--field);
+  background: transparent; color: var(--text); font-size: 15px; font-family: inherit; cursor: pointer;
+}
+.chip.on { background: var(--accent); border-color: var(--accent); color: #0f172a; font-weight: 700; }
