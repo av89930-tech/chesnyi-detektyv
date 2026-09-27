@@ -1,0 +1,8 @@
+{
+  "name": "chesnyi-detektyv",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Чесний Детектив — офлайн PWA: реальна ціна за 1 кг / 1 л і підказки щодо шрінкфляції",
+  "scripts": { "test": "node test/test.js" },
+  "license": "UNLICENSED"
+}

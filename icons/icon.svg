@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#0f172a"/>
+  <rect x="96" y="120" width="220" height="280" rx="24" fill="#1e293b" stroke="#38bdf8" stroke-width="14"/>
+  <rect x="130" y="170" width="150" height="20" rx="10" fill="#94a3b8"/>
+  <rect x="130" y="215" width="110" height="20" rx="10" fill="#94a3b8"/>
+  <text x="130" y="330" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="84" fill="#10b981">₴</text>
+  <circle cx="330" cy="300" r="82" fill="none" stroke="#f8fafc" stroke-width="26"/>
+  <circle cx="330" cy="300" r="64" fill="#38bdf8" fill-opacity=".25"/>
+  <line x1="390" y1="362" x2="448" y2="422" stroke="#f8fafc" stroke-width="34" stroke-linecap="round"/>
+</svg>

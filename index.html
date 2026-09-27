@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Чесний Детектив</title>
+  <meta name="description" content="Перерахунок ціни за 1 кг / 1 л та підказки щодо шрінкфляції прямо в магазині.">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Детектив">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <h1>🕵️ Чесний Детектив</h1>
+      <p class="sub">Реальна ціна за 1 кг / 1 л за один погляд на етикетку</p>
+    </header>
+
+    <!-- label напряму відкриває камеру: без JS-кліку, тому немає подвійного відкриття -->
+    <label class="btn btn-cam" for="cameraInput" id="camBtn">📸 Сфотографувати етикетку</label>
+    <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden>
+
+    <figure id="previewBox" class="preview" hidden>
+      <img id="preview" alt="Фото етикетки">
+      <button type="button" class="link" id="clearPhoto">Прибрати фото</button>
+    </figure>
+
+    <form class="card" id="calcForm" novalidate>
+      <label for="name">Назва товару <span class="opt">(необов'язково)</span></label>
+      <input type="text" id="name" placeholder="наприклад, Молоко 2,5%" maxlength="60" autocomplete="off">
+
+      <label for="price">Ціна з полиці, грн</label>
+      <input type="text" id="price" inputmode="decimal" placeholder="42,00" autocomplete="off" required>
+
+      <label for="amount">Вага / об'єм з етикетки</label>
+      <div class="row">
+        <input type="text" id="amount" inputmode="decimal" placeholder="900" autocomplete="off" required>
+        <select id="unit" aria-label="Одиниця">
+          <option value="g">г</option>
+          <option value="kg">кг</option>
+          <option value="ml">мл</option>
+          <option value="l">л</option>
+          <option value="pcs">шт</option>
+        </select>
+      </div>
+
+      <details id="oldBox">
+        <summary>Пам'ятаю стару упаковку (порівняти)</summary>
+        <label for="oldAmount">Стара вага / об'єм (у тих самих одиницях)</label>
+        <input type="text" id="oldAmount" inputmode="decimal" placeholder="1000" autocomplete="off">
+        <label for="oldPrice">Стара ціна, грн <span class="opt">(порожньо = та сама)</span></label>
+        <input type="text" id="oldPrice" inputmode="decimal" placeholder="42,00" autocomplete="off">
+      </details>
+
+      <p class="error" id="error" role="alert" hidden></p>
+      <button type="submit" class="btn btn-calc">🚀 Розрахувати чесну ціну</button>
+    </form>
+
+    <section id="result" class="report-wrap" hidden aria-live="polite">
+      <pre class="report" id="reportOutput"></pre>
+      <div class="actions">
+        <button type="button" class="btn btn-sec" id="saveBtn">➕ До порівняння</button>
+        <button type="button" class="btn btn-sec" id="shareBtn">📤 Поділитися</button>
+      </div>
+    </section>
+
+    <section class="card" id="compare" hidden>
+      <div class="cmp-head">
+        <h2>⚖️ Порівняння</h2>
+        <button type="button" class="link" id="clearList">Очистити</button>
+      </div>
+      <p class="hint">Найвигідніший товар у кожній групі (кг / л / шт) позначено 🏆.</p>
+      <ol id="compareList"></ol>
+    </section>
+
+    <section class="card install" id="installBox" hidden>
+      <button type="button" class="btn btn-install" id="installBtn">📲 Встановити на головний екран</button>
+    </section>
+    <section class="card install" id="iosHint" hidden>
+      <p>📲 Щоб встановити на iPhone: натисніть «Поділитися» <b>⎋</b> → «На початковий екран».</p>
+    </section>
+
+    <footer>
+      <p>Працює офлайн. Дані зберігаються лише на цьому пристрої.</p>
+      <p class="hint">Підказка про шрінкфляцію — це сигнал перевірити, а не доказ: деякі товари завжди продаються в нестандартній фасовці.</p>
+    </footer>
+  </main>
+
+  <script src="calc.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
